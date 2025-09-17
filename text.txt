@@ -1,2 +1,3 @@
 Test commit for discord
 Test commit for discord v2
+Test commit for discord v3
