@@ -11,7 +11,7 @@ class chessGUI:
         self.root = root
         self.board = board
         self.squares = [[None for _ in range(8)] for _ in range(8)]
-        self.pieceSize = (52, 52)
+        self.pieceSize = (56, 56)
         self.piece_images = {
             "Pawn": {
                 "white": ImageTk.PhotoImage(Image.open("Pieces/white-pawn.png").convert("RGBA").resize(self.pieceSize)),
