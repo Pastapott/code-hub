@@ -4,7 +4,7 @@ set -euo pipefail
 # 1) OS dependancies (Ubuntu/Debian only)
 if command -v apt-get >/dev/null 2>&1; then
   sudo apt-get update
-  sudo apt-get install -y python3 python3-venv python3-pip python3-tk
+  sudo apt-get install -y python3 python3-venv python3-pip python3-tk python3-pil python3-pil.imagetk
 fi
 
 # 2) Create a virtual environment if one doesnt exist

@@ -2,16 +2,10 @@
 import tkinter as tk
 #imports Board class from board fil
 from board import Board
+from PIL import Image, ImageTk
 
-#symbols for each piece
-PIECE_SYMBOLS = {
-    "Pawn":   {"white": "♙", "black": "♟"},
-    "Rook":   {"white": "♖", "black": "♜"},
-    "Knight": {"white": "♘", "black": "♞"},
-    "Bishop": {"white": "♗", "black": "♝"},
-    "Queen":  {"white": "♕", "black": "♛"},
-    "King":   {"white": "♔", "black": "♚"},
-}
+
+
 
 #class for the display
 class chessGUI:
@@ -19,7 +13,38 @@ class chessGUI:
         self.root = root
         self.board = board
         self.squares = [[None for _ in range(8)] for _ in range(8)]
+        self.piece_images = {
+            "Pawn": {
+                "white": ImageTk.PhotoImage(Image.open("Pieces/white-pawn.png").convert("RGBA").resize((56,56))),
+                "black": ImageTk.PhotoImage(Image.open("Pieces/black-pawn.png").convert("RGBA").resize((56,56))),
+            },
+            "Rook": {
+                "white": ImageTk.PhotoImage(Image.open("Pieces/white-rook.png").convert("RGBA").resize((56,56))),
+                "black": ImageTk.PhotoImage(Image.open("Pieces/black-rook.png").convert("RGBA").resize((56,56))),
+            },
+            "Knight": {
+                "white": ImageTk.PhotoImage(Image.open("Pieces/white-knight.png").convert("RGBA").resize((56,56))),
+                "black": ImageTk.PhotoImage(Image.open("Pieces/black-knight.png").convert("RGBA").resize((56,56))),
+            },
+            "Bishop": {
+                "white": ImageTk.PhotoImage(Image.open("Pieces/white-bishop.png").convert("RGBA").resize((56,56))),
+                "black": ImageTk.PhotoImage(Image.open("Pieces/black-bishop.png").convert("RGBA").resize((56,56))),
+            },
+            "Queen": {
+                "white": ImageTk.PhotoImage(Image.open("Pieces/white-queen.png").convert("RGBA").resize((56,56))),
+                "black": ImageTk.PhotoImage(Image.open("Pieces/black-queen.png").convert("RGBA").resize((56,56))),
+            },
+            "King": {
+                "white": ImageTk.PhotoImage(Image.open("Pieces/white-king.png").convert("RGBA").resize((56,56))),
+                "black": ImageTk.PhotoImage(Image.open("Pieces/black-king.png").convert("RGBA").resize((56,56))),
+            }
+        }
         self.create_board()
+        for i in range(8):
+            self.root.rowconfigure(i, weight=1)
+            self.root.columnconfigure(i, weight=1)
+
+    
 
     def create_board(self):
         #Displays the chessboard and starting pieces
@@ -49,8 +74,8 @@ class chessGUI:
                 if piece is None:
                     self.squares[row][col].config(text=" ", width = 2, height = 1)
                 else:
-                    symbol = PIECE_SYMBOLS[piece.name][piece.colour]
-                    self.squares[row][col].config(text=symbol, width = 2, height = 1)
+                    img = self.piece_images[piece.name][piece.colour]
+                    self.squares[row][col].config(image=img, text = "")
 
 if __name__ == "__main__":
     root = tk.Tk()
