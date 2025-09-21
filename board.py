@@ -19,8 +19,11 @@ class Board:
         self.board[0][5] = Bishop("black")
         self.board[0][6] = Knight("black")
         self.board[0][7] = Rook("black")
+
         for col in range(8):
             self.board[1][col] = Pawn("black")
+
+            
         #White
         self.board[7][0] = Rook("white")
         self.board[7][1] = Knight("white")
@@ -30,6 +33,7 @@ class Board:
         self.board[7][5] = Bishop("white")
         self.board[7][6] = Knight("white")
         self.board[7][7] = Rook("white")
+
         for col in range(8):
             self.board[6][col] = Pawn("white")
             

@@ -5,38 +5,37 @@ from board import Board
 from PIL import Image, ImageTk
 
 
-
-
 #class for the display
 class chessGUI:
     def __init__(self, root, board):
         self.root = root
         self.board = board
         self.squares = [[None for _ in range(8)] for _ in range(8)]
+        self.pieceSize = (52, 52)
         self.piece_images = {
             "Pawn": {
-                "white": ImageTk.PhotoImage(Image.open("Pieces/white-pawn.png").convert("RGBA").resize((56,56))),
-                "black": ImageTk.PhotoImage(Image.open("Pieces/black-pawn.png").convert("RGBA").resize((56,56))),
+                "white": ImageTk.PhotoImage(Image.open("Pieces/white-pawn.png").convert("RGBA").resize(self.pieceSize)),
+                "black": ImageTk.PhotoImage(Image.open("Pieces/black-pawn.png").convert("RGBA").resize(self.pieceSize)),
             },
             "Rook": {
-                "white": ImageTk.PhotoImage(Image.open("Pieces/white-rook.png").convert("RGBA").resize((56,56))),
-                "black": ImageTk.PhotoImage(Image.open("Pieces/black-rook.png").convert("RGBA").resize((56,56))),
+                "white": ImageTk.PhotoImage(Image.open("Pieces/white-rook.png").convert("RGBA").resize(self.pieceSize)),
+                "black": ImageTk.PhotoImage(Image.open("Pieces/black-rook.png").convert("RGBA").resize(self.pieceSize)),
             },
             "Knight": {
-                "white": ImageTk.PhotoImage(Image.open("Pieces/white-knight.png").convert("RGBA").resize((56,56))),
-                "black": ImageTk.PhotoImage(Image.open("Pieces/black-knight.png").convert("RGBA").resize((56,56))),
+                "white": ImageTk.PhotoImage(Image.open("Pieces/white-knight.png").convert("RGBA").resize(self.pieceSize)),
+                "black": ImageTk.PhotoImage(Image.open("Pieces/black-knight.png").convert("RGBA").resize(self.pieceSize)),
             },
             "Bishop": {
-                "white": ImageTk.PhotoImage(Image.open("Pieces/white-bishop.png").convert("RGBA").resize((56,56))),
-                "black": ImageTk.PhotoImage(Image.open("Pieces/black-bishop.png").convert("RGBA").resize((56,56))),
+                "white": ImageTk.PhotoImage(Image.open("Pieces/white-bishop.png").convert("RGBA").resize(self.pieceSize)),
+                "black": ImageTk.PhotoImage(Image.open("Pieces/black-bishop.png").convert("RGBA").resize(self.pieceSize)),
             },
             "Queen": {
-                "white": ImageTk.PhotoImage(Image.open("Pieces/white-queen.png").convert("RGBA").resize((56,56))),
-                "black": ImageTk.PhotoImage(Image.open("Pieces/black-queen.png").convert("RGBA").resize((56,56))),
+                "white": ImageTk.PhotoImage(Image.open("Pieces/white-queen.png").convert("RGBA").resize(self.pieceSize)),
+                "black": ImageTk.PhotoImage(Image.open("Pieces/black-queen.png").convert("RGBA").resize(self.pieceSize)),
             },
             "King": {
-                "white": ImageTk.PhotoImage(Image.open("Pieces/white-king.png").convert("RGBA").resize((56,56))),
-                "black": ImageTk.PhotoImage(Image.open("Pieces/black-king.png").convert("RGBA").resize((56,56))),
+                "white": ImageTk.PhotoImage(Image.open("Pieces/white-king.png").convert("RGBA").resize(self.pieceSize)),
+                "black": ImageTk.PhotoImage(Image.open("Pieces/black-king.png").convert("RGBA").resize(self.pieceSize)),
             }
         }
         self.create_board()
