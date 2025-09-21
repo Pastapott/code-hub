@@ -47,10 +47,10 @@ class chessGUI:
             for col in range(8):
                 piece = self.board[row][col]
                 if piece is None:
-                    self.squares[row][col].config(text=" ")
+                    self.squares[row][col].config(text=" ", width = 2, height = 1)
                 else:
                     symbol = PIECE_SYMBOLS[piece.name][piece.colour]
-                    self.squares[row][col].config(text=symbol)
+                    self.squares[row][col].config(text=symbol, width = 2, height = 1)
 
 if __name__ == "__main__":
     root = tk.Tk()
