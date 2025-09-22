@@ -36,4 +36,26 @@ class Board:
 
         for col in range(8):
             self.board[6][col] = Pawn("white")
-            
+    #function used to always find king, helper to make sure not in check
+    def find_king(self, colour):
+      for r in range(8):
+        for c in range(8):
+          piece = self.board[r][c]
+          if piece and piece.name == "King" and piece.colour == colour:
+             return (r,c)
+      return None
+    
+    def is_in_check(self, colour):
+      king_position = self.find_king(colour)
+      for r in range(8):
+        for c in range(8):
+           piece = self.board[r][c]
+           if piece and piece.colour != colour:
+              if king_position in piece.get_possible_moves((r, c), self.board):
+                 return True
+      return False
+    
+    def legal_king_moves(self, position):
+      #logic for legal king moves
+      return
+      
