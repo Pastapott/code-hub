@@ -7,15 +7,16 @@ from PIL import Image, ImageTk
 
 #class for the display
 class chessGUI:
-    def __init__(self, root, board):
+    def __init__(self, root, game: Board):
         self.root = root
-        self.board = board
+        self.game = game
         self.squares = [[None for _ in range(8)] for _ in range(8)]
         self.frames = [[None for _ in range(8)] for _ in range(8)]
         self.selected_square = None
         self.original_colors = [[None for _ in range(8)] for _ in range(8)]
         self.pieceSize = (56, 56)
         self.current_turn = "white"
+        self.highlighted_squares = []
         self.piece_images = {
             "Pawn": {
                 "white": ImageTk.PhotoImage(Image.open("Pieces/white-pawn.png").convert("RGBA").resize(self.pieceSize)),
@@ -79,7 +80,7 @@ class chessGUI:
         #update board to match positions
         for row in range(8):
             for col in range(8):
-                piece = self.board[row][col]
+                piece = self.game.board[row][col]
                 colour = self.original_colors[row][col]
                 if piece is None:
                   self.squares[row][col].config(image="", text=" ", bg=colour)
@@ -90,47 +91,27 @@ class chessGUI:
                   self.squares[row][col].image = img
     
     def attempt_move(self,start,end):
-      sr, sc = start
-      er, ec = end
-      piece = self.board[sr][sc]
-
-      if piece is None:
-        return False
-      
-      possible_moves = piece.get_possible_moves((sr, sc), self.board)
-      if (er, ec) not in possible_moves:
-        return False
-      if self.board[er][ec] is not None:
-        captured = self.board[er][ec]
-        print(f"{captured.colour} {captured.name} captured!")
-
-      self.board[er][ec] = piece
-      self.board[sr][sc] = None
-
-      self.update_board()
-      return True
-
-    
+      if self.game.move_piece(start, end):
+         self.update_board()
+         return True
+      return False
 
     def square_clicked(self, row, col):
       print(f"Square clicked:({row}, {col})")
-
       if self.selected_square is None:
-        piece = self.board[row][col]
-        if self.board[row][col] is not None and piece.colour == self.current_turn:
+        piece = self.game.board[row][col]
+        if piece is not None and piece.colour == self.current_turn:
           self.selected_square = (row, col)
           self.highlight_square(row, col, "#6FC0F2")
-          print(f"Selected piece: {self.board[row][col].name} at ({row},{col})")
+          legal_moves = self.game.get_legal_moves_for_square((row, col))
+          self.highlight_moves(legal_moves)
+          print(f"Selected piece: {piece.name} at ({row},{col}) legal moves: {legal_moves}")
       elif self.selected_square == (row, col):
         self.deselect_square()
       else:
           if self.attempt_move(self.selected_square, (row,col)):
             print(f"moved piece to ({row}, {col})")
-            if self.current_turn == "white":
-              self.current_turn = "black"
-            else:
-              self.current_turn = "white"
-             
+            self.current_turn = "black" if self.current_turn == "white" else "white"
           else:
              print("Illegal Move")
           self.deselect_square()
@@ -139,6 +120,12 @@ class chessGUI:
       self.frames[row][col].config(bg=highlight_colour)
       self.squares[row][col].config(bg=highlight_colour)
 
+    def highlight_moves(self, moves):
+       for (r,c) in moves:
+          self.frames[r][c].config(bg="#BCE954")
+          self.squares[r][c].config(bg="#BCE954")
+          self.highlighted_squares.append((r, c))
+
     def deselect_square(self):
       if self.selected_square:
         row, col = self.selected_square
@@ -146,13 +133,16 @@ class chessGUI:
         self.frames[row][col].config(bg=original_colour)
         self.squares[row][col].config(bg=original_colour)
         self.selected_square = None
+      for (r,c) in self.highlighted_squares:
+         orig = self.original_colors[r][c]
+         self.frames[r][c].config(bg=orig)
+         self.squares[r][c].config(bg=orig)
+      self.highlighted_squares = []
 
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("Chess")
-
-    game_board = Board().board
-    gui = chessGUI(root, game_board)
-
+    game = Board()
+    gui = chessGUI(root, game)
     root.mainloop()
 
