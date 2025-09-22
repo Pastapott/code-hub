@@ -15,6 +15,7 @@ class chessGUI:
         self.selected_square = None
         self.original_colors = [[None for _ in range(8)] for _ in range(8)]
         self.pieceSize = (56, 56)
+        self.current_turn = "white"
         self.piece_images = {
             "Pawn": {
                 "white": ImageTk.PhotoImage(Image.open("Pieces/white-pawn.png").convert("RGBA").resize(self.pieceSize)),
@@ -115,7 +116,8 @@ class chessGUI:
       print(f"Square clicked:({row}, {col})")
 
       if self.selected_square is None:
-        if self.board[row][col] is not None:
+        piece = self.board[row][col]
+        if self.board[row][col] is not None and piece.colour == self.current_turn:
           self.selected_square = (row, col)
           self.highlight_square(row, col, "#6FC0F2")
           print(f"Selected piece: {self.board[row][col].name} at ({row},{col})")
@@ -123,7 +125,12 @@ class chessGUI:
         self.deselect_square()
       else:
           if self.attempt_move(self.selected_square, (row,col)):
-             print(f"moved piece to ({row}, {col})")
+            print(f"moved piece to ({row}, {col})")
+            if self.current_turn == "white":
+              self.current_turn = "black"
+            else:
+              self.current_turn = "white"
+             
           else:
              print("Illegal Move")
           self.deselect_square()

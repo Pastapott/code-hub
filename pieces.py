@@ -28,6 +28,16 @@ class Pawn(Piece):
 
 		if row == starting_row and board[row + direction][col] is None and board[row + (2 * direction)][col] is None:
 			moves.append((row + (2 * direction), col))
+
+		if is_on_board(row + direction, col -1):
+			target = board[row + direction][col - 1]
+			if target is not None and target.colour != self.colour:
+				moves.append((row + direction, col - 1))
+
+		if is_on_board(row + direction, col + 1):
+			target = board[row + direction][col + 1]
+			if target is not None and target.colour != self.colour:
+				moves.append((row + direction, col + 1))
 		return moves
 
 class Rook(Piece):
