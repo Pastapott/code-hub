@@ -107,41 +107,45 @@ class Board:
        return all_moves
     
     def move_piece(self, start, end):
-       sr, sc = start
-       er, ec = end
-       piece = self.board[sr][sc]
-       if piece is None:
-          return False
-       legal_moves = self.get_legal_moves_for_square((sr, sc))
-       if (er, ec) not in legal_moves:
-          return False
+      sr, sc = start
+      er, ec = end
+      piece = self.board[sr][sc]
+      if piece is None:
+        return False
+      legal_moves = self.get_legal_moves_for_square((sr, sc))
+      if (er, ec) not in legal_moves:
+        return False
+      
+      if piece.name == "King" and abs(ec - sc) == 2:
+        row = sr
+        if ec == 6:
+            self.board[row][5] = self.board[row][7]
+            self.board[row][7] = None
+            self.board[row][5].has_moved = True
+        elif ec == 2:
+            self.board[row][3] = self.board[row][0]
+            self.board[row][0] = None
+            self.board[row][3].has_moved = True
+
+      captured = self.board[er][ec]
+      if captured:
+        print(f"Captured: {captured.colour} {captured.name} at {(er, ec)}")
+
+      self.board[er][ec] = self.board[sr][sc]
+      self.board[sr][sc] = None
+
+      moved_piece = self.board[er][ec]
+
+      self.board[er][ec].has_moved = True
+      if moved_piece.name == "Pawn" and (er == 0 or er == 7):
+        return "promotion_needed", er, ec, moved_piece.colour
+      else:
+        return "move_done"
+
+    #self.board[er][ec] = Queen(moved_piece.colour)
+    #print(f"Pawn promoted to Queen at {(er, ec)}")
+    #return True
        
-       if piece.name == "King" and abs(ec - sc) == 2:
-          row = sr
-          if ec == 6:
-             self.board[row][5] = self.board[row][7]
-             self.board[row][7] = None
-             self.board[row][5].has_moved = True
-          elif ec == 2:
-             self.board[row][3] = self.board[row][0]
-             self.board[row][0] = None
-             self.board[row][3].has_moved = True
-
-       captured = self.board[er][ec]
-       if captured:
-          print(f"Captured: {captured.colour} {captured.name} at {(er, ec)}")
-
-       self.board[er][ec] = self.board[sr][sc]
-       self.board[sr][sc] = None
-
-       moved_piece = self.board[er][ec]
-
-       self.board[er][ec].has_moved = True
-
-       if moved_piece.name == "Pawn" and (er == 0 or er == 7):
-          self.board[er][ec] = Queen(moved_piece.colour)
-          print(f"Pawn promoted to Queen at {(er, ec)}")
-       return True
     
     def can_castle_kingside(self, colour):
        row = 7 if colour == "white" else 0

@@ -3,6 +3,7 @@ import tkinter as tk
 #imports Board class from board fil
 from board import Board
 from PIL import Image, ImageTk
+from pieces import Pawn, Rook, Knight, Bishop, Queen, King
 
 #class for the display
 class chessGUI:
@@ -88,12 +89,60 @@ class chessGUI:
                   img = self.piece_images[piece.name][piece.colour]
                   self.squares[row][col].config(image=img, text="", bg=colour)
                   self.squares[row][col].image = img
+
+
+    def open_promotion_popup(self, er, ec, colour):
+      popup = tk.Toplevel(self.root)
+      popup.geometry("250x100")
+      popup.title("Promote Pawn")
+
+      chosen_piece = {"piece": None}
+
+      def choose(piece_class):
+        chosen_piece["piece"] = piece_class(colour)
+        popup.destroy()
+
+      pieces = [Queen, Rook, Bishop, Knight]
+
+      button_size = (40, 40)
+      piece_images = {}
+      for piece_class in pieces:
+        img_path = f"Pieces/{colour.lower()}-{piece_class.__name__.lower()}.png"
+        img = ImageTk.PhotoImage(Image.open(img_path).convert("RGBA").resize(button_size))
+        piece_images[piece_class] = img
+
+      for i, piece_class in enumerate(pieces):
+        btn = tk.Button(popup, image=piece_images[piece_class],command=lambda p=piece_class: choose(p))
+        btn.grid(row=0, column=i, padx=5, pady=20)
+                 
+        btn.image = piece_images[piece_class]  
+        btn.grid(row=0, column=i, padx=5, pady=20)        
+
+      
+
+      popup.update_idletasks()
+      popup.grab_set()
+      popup.focus_set()
+      popup.wait_window()
+
+      return chosen_piece["piece"]
+    
+
     
     def attempt_move(self,start,end):
-      if self.game.move_piece(start, end):
-         self.update_board()
-         return True
+      result = self.game.move_piece(start, end)
+
+      if isinstance(result, tuple) and result[0] == "promotion_needed":
+        er, ec, colour = result[1], result[2], result[3]
+        promoted_piece = self.open_promotion_popup(er, ec, colour)
+        self.game.board[er][ec] = promoted_piece  # update board manually
+        self.update_board()
+        return True
+      elif result == "move_done" or result is True:
+        self.update_board()
+        return True
       return False
+
 
     def square_clicked(self, row, col):
       print(f"Square clicked:({row}, {col})")
@@ -137,6 +186,8 @@ class chessGUI:
          self.frames[r][c].config(bg=orig)
          self.squares[r][c].config(bg=orig)
       self.highlighted_squares = []
+
+
 
 if __name__ == "__main__":
     root = tk.Tk()
