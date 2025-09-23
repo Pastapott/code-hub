@@ -4,7 +4,6 @@ import tkinter as tk
 from board import Board
 from PIL import Image, ImageTk
 
-
 #class for the display
 class chessGUI:
     def __init__(self, root, game: Board):

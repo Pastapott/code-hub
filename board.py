@@ -74,6 +74,7 @@ class Board:
           return []
        pseudo = piece.get_possible_moves((r, c), self.board)
        legal = []
+
        for (er, ec) in pseudo:
           test_board = self.copy_board_state()
           test_board[er][ec] = test_board[r][c]
@@ -83,6 +84,15 @@ class Board:
              test_board[er][ec] = Queen(moved_piece.colour)
           if not self.is_in_check(piece.colour, test_board):
              legal.append((er, ec))
+
+       if piece.name == "King":
+          if not self.is_in_check(piece.colour):
+             row = r
+             if self.can_castle_kingside(piece.colour):
+                legal.append((row, 6))
+             if self.can_castle_queenside(piece.colour):
+                legal.append((row, 2)) 
+       
        return legal
 
     def get_all_legal_moves_for_colour(self, colour):
@@ -90,7 +100,7 @@ class Board:
        for r in range(8):
             for c in range(8):
                piece = self.board[r][c]
-               if piece is not None and piece == colour:
+               if piece is not None and piece.colour == colour:
                  legal = self.get_legal_moves_for_square((r, c))
                  if legal:
                     all_moves[(r, c)] = legal
@@ -105,13 +115,64 @@ class Board:
        legal_moves = self.get_legal_moves_for_square((sr, sc))
        if (er, ec) not in legal_moves:
           return False
+       
+       if piece.name == "King" and abs(ec - sc) == 2:
+          row = sr
+          if ec == 6:
+             self.board[row][5] = self.board[row][7]
+             self.board[row][7] = None
+             self.board[row][5].has_moved = True
+          elif ec == 2:
+             self.board[row][3] = self.board[row][0]
+             self.board[row][0] = None
+             self.board[row][3].has_moved = True
+
        captured = self.board[er][ec]
        if captured:
           print(f"Captured: {captured.colour} {captured.name} at {(er, ec)}")
+
        self.board[er][ec] = self.board[sr][sc]
        self.board[sr][sc] = None
+
        moved_piece = self.board[er][ec]
+
+       self.board[er][ec].has_moved = True
+
        if moved_piece.name == "Pawn" and (er == 0 or er == 7):
           self.board[er][ec] = Queen(moved_piece.colour)
           print(f"Pawn promoted to Queen at {(er, ec)}")
        return True
+    
+    def can_castle_kingside(self, colour):
+       row = 7 if colour == "white" else 0
+       king = self.board[row][4]
+       rook = self.board[row][7]
+       if not king or not rook: return False
+       if king.has_moved or rook.has_moved: return False
+       if self.board[row][5] or self.board[row][6]: return False
+       for col in [4, 5, 6]:
+          if self.square_under_attack((row, col), colour):
+             return False
+       return True
+    
+    def can_castle_queenside(self, colour):
+       row = 7 if colour == "white" else 0
+       king = self.board[row][4]
+       rook = self.board[row][0]
+       if not king or not rook: return False
+       if king.has_moved or rook.has_moved: return False
+       if self.board[row][1] or self.board[row][2] or self.board[row][3]: return False
+       for col in [4, 3, 2]:
+          if self.square_under_attack((row, col), colour):
+             return False
+       return True
+    
+    def square_under_attack(self, position, colour):
+       r, c = position
+       for row in range(8):
+          for col in range(8):
+             piece = self.board[row][col]
+             if piece and piece.colour != colour:
+                if position in piece.get_possible_moves((row, col), self.board):
+                   return True
+       return False

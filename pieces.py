@@ -4,6 +4,7 @@ class Piece:
 	def __init__(self,colour):
 		self.colour = colour
 		self.name = "Piece"
+		self.has_moved = False
       
 	def get_possible_moves(self, position, board):
 		pass
