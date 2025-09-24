@@ -263,21 +263,51 @@ class chessGUI:
 
       sr, sc = start
       er, ec = end
-      start_square = files[sc] + ranks[sr]
-      end_square = files[ec] + ranks[er]
+
+      lm = getattr(self.game, "last_move", {}) or {}
+      is_castling = lm.get("castling")
+      is_ep = lm.get("en_passant", False)
+      did_promote = lm.get("promotion", False)
+      captured = lm.get("captured")
+
+      start_sq = files[sc] + ranks[sr]
+      end_sq = files[ec] + ranks[er]
+
+      if is_castling in ("O-O", "O-O-O"):
+        return is_castling
       if piece.name == "Pawn":
          symbol = ""
       elif piece.name == "Knight":
          symbol = "N"
       else:
          symbol = piece.name[0].upper()
+
+      if is_ep and piece.name == "Pawn":
+        pawn_file = files[sc]
+        return f"{pawn_file}x{end_sq} e.p."
+      
+      if did_promote and piece.name == "Pawn":
+        promoted_piece = self.game.board[er][ec]
+        promo_map = {
+            "Queen": "Q",
+            "Rook": "R",
+            "Bishop": "B",
+            "Knight": "N",
+        }
+        promo_symbol = promo_map.get(getattr(promoted_piece, "name", ""), "Q")
         
-      target = self.game.board[er][ec]
-      if target is not None:
-        notation = f"{symbol}{start_square}x{end_square}"
+        if captured:
+            pawn_file = files[sc]
+            return f"{pawn_file}x{end_sq}={promo_symbol}"
+        else:
+            pawn_file = files[sc]
+            rank = ranks[er]
+            return f"{pawn_file}{rank}={promo_symbol}"
+
+      if captured:
+        return f"{symbol}{start_sq}x{end_sq}"
       else:
-         notation = f"{symbol}{start_square}->{end_square}"
-      return notation
+        return f"{symbol}{start_sq}->{end_sq}"
     
     def end_game(self, result):
       for widget in self.sidebar_frame.winfo_children():

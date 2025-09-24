@@ -14,15 +14,17 @@ class Pawn(Piece):
 		Piece.__init__(self, colour)
 		self.name = "Pawn"
 
-	def get_possible_moves(self, position, board):
+	def get_possible_moves(self, position, board, last_move=None):
 		moves = []
 		row,col = position
 		if self.colour == "white":
 			direction = -1
 			starting_row = 6
+			en_passant_row = 3
 		else:
 			direction = 1
 			starting_row = 1
+			en_passant_row = 4
 
 		if is_on_board(row + direction, col) and board[row + direction][col] is None:
 			moves.append((row + direction, col))
@@ -39,6 +41,12 @@ class Pawn(Piece):
 			target = board[row + direction][col + 1]
 			if target is not None and target.colour != self.colour:
 				moves.append((row + direction, col + 1))
+
+		if last_move and row == en_passant_row:
+			(sr, sc), (er, ec), moved_piece = last_move["start"], last_move["end"], last_move["piece"]
+			if moved_piece.name == "Pawn" and abs(er - sr) == 2:
+				if er == row and abs(ec - col) == 1:
+					moves.append((row + direction, ec))
 		return moves
 
 class Rook(Piece):
@@ -46,7 +54,7 @@ class Rook(Piece):
 		Piece.__init__(self, colour)
 		self.name = "Rook"
 
-	def get_possible_moves(self, position, board):
+	def get_possible_moves(self, position, board, last_move=None):
 		moves = []
 		row,col = position
 		directions = [(1,0),(-1,0),(0,1),(0,-1)] 
@@ -71,7 +79,7 @@ class Knight(Piece):
 		Piece.__init__(self, colour)
 		self.name = "Knight"
 
-	def get_possible_moves(self, position, board):
+	def get_possible_moves(self, position, board, last_move=None):
 		moves = []
 		row,col = position
 		directions = [(2,-1),(2,1),(1,2),(1,-2),(-2,1),(-2,-1),(-1,2),(-1,-2)]
@@ -90,7 +98,7 @@ class Bishop(Piece):
 		Piece.__init__(self, colour)
 		self.name = "Bishop"
 
-	def get_possible_moves(self, position, board):
+	def get_possible_moves(self, position, board, last_move=None):
 		moves = []
 		row,col = position
 		directions = [(1,1),(1,-1),(-1,1),(-1,-1)]
@@ -116,7 +124,7 @@ class Queen(Piece):
 		Piece.__init__(self, colour)
 		self.name = "Queen"
 
-	def get_possible_moves(self, position, board):
+	def get_possible_moves(self, position, board, last_move=None):
 		moves = []
 		row,col = position
 		directions = [(1,1),(1,-1),(-1,1),(-1,-1),(1,0),(-1,0),(0,1),(0,-1)]
@@ -140,7 +148,7 @@ class King(Piece):
 		Piece.__init__(self, colour)
 		self.name = "King"
 
-	def get_possible_moves(self, position, board):
+	def get_possible_moves(self, position, board, last_move=None):
 		moves = []
 		row,col = position
 		directions = [(1,0),(-1,0),(0,-1),(0,1),(1,1),(1,-1),(-1,1),(-1,-1)]
