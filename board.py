@@ -67,6 +67,18 @@ class Board:
                  return True
       return False
     
+    def is_checkmate(self, colour):
+       if not self.is_checkmate:
+          return False
+       all_moves = self.get_all_legal_moves_for_colour(colour)
+       return len(all_moves) == 0
+    
+    def is_stalemate(self, colour):
+       if self.is_in_check(colour):
+          return False
+       all_moves = self.get_all_legal_moves_for_colour(colour)
+       return len (all_moves) == 0
+    
     def get_legal_moves_for_square(self, position):
        r, c = position
        piece = self.board[r][c]

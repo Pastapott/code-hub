@@ -34,8 +34,9 @@ class ResizeManager:
       new_width, new_height = total_width, expected_height
 
     # if the size is off by more than 2 pixels, it corrects by setting the new geometry
-    if abs(new_width - total_width) > 2 or abs(new_height - total_height) > 2:
-      self.root.geometry(f"{new_width}x{new_height}")
+    if self.root.state() == "normal":
+      if abs(new_width - total_width) > 2 or abs(new_height - total_height) > 2:
+        self.root.geometry(f"{new_width}x{new_height}")
 
 
     #Board gets 80% of the window, sidebar gets the rest (20%)

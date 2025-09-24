@@ -5,6 +5,8 @@ from board import Board
 from PIL import Image, ImageTk
 from pieces import Pawn, Rook, Knight, Bishop, Queen, King
 from resize_manager import ResizeManager
+from datetime import datetime
+import os
 
 #class for the display
 class chessGUI:
@@ -38,6 +40,7 @@ class chessGUI:
         self.original_colors = [[None for _ in range(8)] for _ in range(8)]
         self.current_turn = "white"
         self.highlighted_squares = []
+        self.move_history = []
         self.piece_images = {
             "Pawn": {
                 "white": ImageTk.PhotoImage(Image.open("Pieces/white-pawn.png").convert("RGBA")),
@@ -118,6 +121,13 @@ class chessGUI:
       tk.Label(self.sidebar_frame, text="Settings", bg="#2b2b2b", fg="white").pack(pady=10)
       tk.Button(self.sidebar_frame, text="Undo Move").pack(pady=5)
       tk.Button(self.sidebar_frame, text="Reset Board").pack(pady=5)
+    
+    def reset_sidebar(self):
+    # Clear the sidebar
+      for widget in self.sidebar_frame.winfo_children():
+        widget.destroy()
+      # Rebuild the default sidebar
+      self.create_sidebar()
 
     def update_board(self, preserve_highlights=False):
         #update board to match positions
@@ -177,16 +187,30 @@ class chessGUI:
 
     
     def attempt_move(self,start,end):
+      piece = self.game.board[start[0]][start[1]]
       result = self.game.move_piece(start, end)
-
       if isinstance(result, tuple) and result[0] == "promotion_needed":
         er, ec, colour = result[1], result[2], result[3]
         promoted_piece = self.open_promotion_popup(er, ec, colour)
-        self.game.board[er][ec] = promoted_piece  # update board manually
+        self.game.board[er][ec] = promoted_piece  
+        result = "move_done"
+
+      if result == "move_done" or result is True:
         self.update_board()
-        return True
-      elif result == "move_done" or result is True:
-        self.update_board()
+        #log moves
+        move_notation = self.get_move_notation(start, end, piece)
+        self.move_history.append(move_notation)
+
+        self.current_turn = "black" if self.current_turn == "white" else "white"
+
+        if self.game.is_checkmate(self.current_turn):
+          result = (f"Checkmate! { 'White' if self.current_turn == 'black' else 'Black' } wins.")
+          print(result)
+          self.end_game(result)
+        elif self.game.is_stalemate(self.current_turn):
+          result = ("Stalemate! It's a draw.")
+          print(result)
+          self.end_game(result)
         return True
       return False
 
@@ -206,7 +230,6 @@ class chessGUI:
       else:
           if self.attempt_move(self.selected_square, (row,col)):
             print(f"moved piece to ({row}, {col})")
-            self.current_turn = "black" if self.current_turn == "white" else "white"
           else:
              print("Illegal Move")
           self.deselect_square()
@@ -234,7 +257,66 @@ class chessGUI:
          self.squares[r][c].config(bg=orig)
       self.highlighted_squares = []
 
+    def get_move_notation(self,start,end,piece):
+      files = "abcdefgh"
+      ranks = "87654321"
 
+      sr, sc = start
+      er, ec = end
+      start_square = files[sc] + ranks[sr]
+      end_square = files[ec] + ranks[er]
+      if piece.name == "Pawn":
+         symbol = ""
+      elif piece.name == "Knight":
+         symbol = "N"
+      else:
+         symbol = piece.name[0].upper()
+        
+      target = self.game.board[er][ec]
+      if target is not None:
+        notation = f"{symbol}{start_square}x{end_square}"
+      else:
+         notation = f"{symbol}{start_square}->{end_square}"
+      return notation
+    
+    def end_game(self, result):
+      for widget in self.sidebar_frame.winfo_children():
+        widget.destroy()
+
+      msg = (f"Game ended by {result}.\nWould you like to save this game?")
+      tk.Label(self.sidebar_frame, text=msg, bg="#2b2b2b", fg="white", wraplength=200).pack(pady=10)
+
+      name_frame = tk.Frame(self.sidebar_frame, bg="#2b2b2b")
+      name_frame.pack(pady=5)
+      tk.Label(name_frame, text="Save as:", bg="#2b2b2b", fg="white").pack(side="left", padx=5)
+      name_entry = tk.Entry(name_frame)
+      name_entry.pack(side="left", padx=5)
+
+
+      def save_game():
+        os.makedirs("saved_games", exist_ok=True)
+
+        custom_name = name_entry.get().strip()
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+
+        if custom_name:
+          filename = (f"{timestamp}_{custom_name}.txt")
+        else:
+          filename = f"{timestamp}.txt"
+        path = os.path.join("saved_games", filename)  
+
+        with open(path, "w") as f:
+          for i, move in enumerate(self.move_history, 1):
+            f.write(f"{i}. {move}\n")
+          f.write(f"\nResult: {result}\n")
+        print(f"Game saved to {path}")
+        self.reset_sidebar()
+
+      btn_frame = tk.Frame(self.sidebar_frame, bg="#2b2b2b")
+      btn_frame.pack(pady=10)
+
+      tk.Button(btn_frame, text="Yes", command=save_game).pack(side="left", padx=20, pady=20)
+      tk.Button(btn_frame, text="No", command=self.reset_sidebar).pack(side="right", padx=20, pady=20)
 
 if __name__ == "__main__":
     root = tk.Tk()
