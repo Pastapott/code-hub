@@ -8,6 +8,7 @@ class Board:
         self.board = [[None for _ in range(8)] for _ in range(8)]
         self.last_move = None     
         self.move_stack = [] 
+        self.redo_stack = []
         if setup_default:
             self.setup_board()
 
@@ -41,6 +42,12 @@ class Board:
 
     def copy_board_state(self):
         return [row.copy() for row in self.board]
+    
+    def reset_board(self):
+        self.board = [[None for _ in range(8)] for _ in range(8)]
+        self.last_move = None
+        self.move_stack = []
+        self.setup_board()
 
     # function used to always find king, helper to make sure not in check
     def find_king(self, colour, board_state=None):
@@ -165,7 +172,7 @@ class Board:
         moved_piece.has_moved = True
 
         # Save move info
-        self.last_move = {
+        move_info = {
             "start": (sr, sc),
             "end": (er, ec),
             "piece": moved_piece,
@@ -173,12 +180,70 @@ class Board:
             "promotion": (moved_piece.name == "Pawn" and (er == 0 or er == 7)),
             "castling": castling_flag,
             "en_passant": en_passant_flag,
+            "prev_has_moved": piece.has_moved,
         }
+        self.last_move = move_info
+        self.move_stack.append(move_info)
 
         if moved_piece.name == "Pawn" and (er == 0 or er == 7):
             return "promotion_needed", er, ec, moved_piece.colour
         else:
             return "move_done"
+        
+
+    def undo_last_move(self):
+        if not self.move_stack:
+            return False
+
+        move = self.move_stack.pop()
+        sr, sc = move["start"]
+        er, ec = move["end"]
+        piece = move["piece"]
+
+        self.board[sr][sc] = piece
+        self.board[er][ec] = move["captured"]  
+        piece.has_moved = move.get("prev_has_moved", False)
+
+        if move["castling"] == "O-O":  
+            self.board[sr][7] = self.board[sr][5]
+            self.board[sr][5] = None
+        elif move["castling"] == "O-O-O":  
+            self.board[sr][0] = self.board[sr][3]
+            self.board[sr][3] = None
+        self.redo_stack.append(move)
+
+
+        self.last_move = self.move_stack[-1] if self.move_stack else None
+        return True
+    
+    
+    def redo_last_move(self):
+        if not self.redo_stack:
+            return False
+        
+        move = self.redo_stack.pop()
+        sr, sc = move["start"]
+        er, ec = move["end"]
+        piece = move["piece"]
+
+        self.board[sr][sc] = None
+        self.board[er][ec] = piece
+        if move["captured"]:
+            pass
+
+        if move["castling"] == "O-O":  
+            self.board[sr][5] = self.board[sr][7]
+            self.board[sr][7] = None
+        elif move["castling"] == "O-O-O":  
+            self.board[sr][3] = self.board[sr][0]
+            self.board[sr][0] = None
+
+        piece.has_moved = True
+
+        self.move_stack.append(move)
+        self.last_move = move
+        return True
+
 
     def _handle_en_passant(self, sr, sc, er, ec):
         if not self.last_move:

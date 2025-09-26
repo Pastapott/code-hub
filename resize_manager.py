@@ -42,7 +42,7 @@ class ResizeManager:
     #Board gets 80% of the window, sidebar gets the rest (20%)
     board_width = int(new_width * board_ratio)
     sidebar_width = new_width - board_width
-    self.sidebar_frame.config(width=sidebar_width)
+    self.sidebar_frame.configure(width=sidebar_width)
 
     #Calculates cell sizes and configures the rows and columns to have this size
     cell_size = int(min(board_width, new_height) // 8)
@@ -62,7 +62,7 @@ class ResizeManager:
   def resize_piece(self, row, col, piece, size):
     """Resize a piece image and apply it to the correct square"""
     if not piece or size <= 0:
-      self.squares[row][col].config(image="", bg=self.original_colors[row][col])
+      self.squares[row][col].configure(image="", bg=self.original_colors[row][col])
       self.squares[row][col].image = None
       return
 
@@ -78,5 +78,5 @@ class ResizeManager:
     #Takes the cached image and resizes for all current cell sizes, wraps in imagetk.photoimage so it can be used by tkinter
     img = self.base_piece_images[piece.name][piece.colour].resize((size, size), Image.Resampling.LANCZOS)
     photo = ImageTk.PhotoImage(img)
-    self.squares[row][col].config(image=photo, bg=self.original_colors[row][col])
+    self.squares[row][col].configure(image=photo, bg=self.original_colors[row][col])
     self.squares[row][col].image = photo
